@@ -20,7 +20,7 @@ import java.util.List;
  */
 public class LexerClass {
 
-    int line = 1;
+    int line = 1 , totalNoErrors = 0 , wordNo = 1;
     BufferedReader reader;
     char current;
     String word = "";
@@ -28,7 +28,8 @@ public class LexerClass {
     public static final String KEY_WORDS[][] = new String[][]{
         {"Divisio", "Class"},
         {"InferedFrom", "Inheritance"},
-        {"WhetherDo-Else", "Condition"},
+        {"WhetherDo", "Condition"},
+        {"Else", "Condition"},
         {"Ire", "Integer"},
         {"Sire", "SInteger"},
         {"Clo", "Character"},
@@ -40,7 +41,8 @@ public class LexerClass {
         {"RingWhen", "Loop"},
         {"BackedValue", "Return"},
         {"STT", "Struct"},
-        {"Check –CaseOf", "Switch"},
+        {"Check", "Switch"},
+        {"CaseOf", "Switch"},
         {"Beginning", "Start Statement"},
         {"End", "End Statement"},
         {"Using", "Inclusion"},};
@@ -92,6 +94,7 @@ public class LexerClass {
     ArrayList<Token> generateTokens() {
         Token token = readNextToken();
         while (token != null) {
+            wordNo++;
             tokenList.add(token);
             token = readNextToken();
         }
@@ -124,7 +127,10 @@ public class LexerClass {
                     // Ignore white space & Tabs & New line
                     if (current == ' ' || current == '\n' || current == '\t' || current == '\r') {
                         if (current == '\n') {
+                            {
                             line++;
+                            wordNo = 0;
+                            }
                         }
                         current = readNextChar();
                     } // S1
@@ -187,6 +193,11 @@ public class LexerClass {
                     state = 20;
                     break;
                     }// S21
+                    else if (isNumber(current))
+                    {
+                    state = 21;
+                    break;
+                    }
                     
                 }
                 break;
@@ -328,16 +339,54 @@ public class LexerClass {
                         return new Token(line, ifFoundOperators(word), word);
                     }
                 }
-                
+                //S21
+                case 21:
+                {
+                    word = word + current;
+                    current = readNextChar();
+                    if (isNumber(current)) {
+                        word = word + current;
+                        current = readNextChar();
+                        while (true) {
+                            if (isNumber(current)) {
+                                word += current;
+                                current = readNextChar();
+                            } else {
+                                return new Token(line, "Constant", word);
+                            }
+                        }
+                    }
+                    else if (isLetter(current))
+                    {
+                    state = 99;
+                    break;
+                    }
+                    else
+                    {
+                    return new Token (line , "constant" , word);
+                    }
+                }
+                    
                 // Error State
                 case 99: {
-
+                    totalNoErrors++;
+                    word = word + current; 
+                    current = readNextChar();
+                   while (true) {
+                        if (isLetter(current) || current == '_' || isNumber(current)) {
+                            word = word + current;
+                            current = readNextChar();
+                        }
+                        else
+                        {
+                        return new Token(line , "Invalid" , word);
+                        }
+                     }
                 }
-                break;
 
                 default: {
-
-                    System.out.println("Not match");
+                    //System.out.println("Not match");
+                    current = readNextChar();
                     state = 0;
                 }
 
@@ -390,6 +439,16 @@ public class LexerClass {
             if (word.equals(Operators[i][0])) {
                 Result = Operators[i][1];
             }
+        }
+        return Result;
+    }
+
+    public ArrayList<Token> getTokenList() {
+        return tokenList;
+    }
+
+}
+
         }
         return Result;
     }
