@@ -449,12 +449,3 @@ public class LexerClass {
 
 }
 
-        }
-        return Result;
-    }
-
-    public ArrayList<Token> getTokenList() {
-        return tokenList;
-    }
-
-}
