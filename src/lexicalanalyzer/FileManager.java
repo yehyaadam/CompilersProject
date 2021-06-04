@@ -38,10 +38,6 @@ public class FileManager {
     
     public static void runProgram(){
         File file = null;
-
-        
-        
-        
         
         try {
             file = new File(FileManager.Location);

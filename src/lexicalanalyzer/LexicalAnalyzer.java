@@ -23,7 +23,9 @@ public class LexicalAnalyzer {
          
         //URL Input_url = ClassLoader.getSystemResource("input.txt");
         //System.out.println(Input_url);
-        
+        FileManager.Location = "input.txt";
+
+        FileManager.runProgram();
 
         
     }

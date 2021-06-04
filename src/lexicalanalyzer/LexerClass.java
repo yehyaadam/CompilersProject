@@ -198,8 +198,6 @@ public class LexerClass {
                     {
                     state = 21;
                     break;
-                    }else if(current == '#'){
-                        state = 22;
                     }
                     
                 }
@@ -338,6 +336,10 @@ public class LexerClass {
                         }
                         return new Token(line, ifFoundOperators(word), word);
                     }
+//                     else if(current == '#'){
+//                        word = word + current;
+//                        return new Token(line, ifFoundOperators(word), word);
+//                    }
                     else {
                         return new Token(line, ifFoundOperators(word), word);
                     }
