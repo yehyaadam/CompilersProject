@@ -21,15 +21,14 @@ public class LexicalAnalyzer {
      */
     public static void main(String[] args) {
          
-        //URL Input_url = ClassLoader.getSystemResource("input.txt");
-        //System.out.println(Input_url);
-        FileManager.Location = "input.txt";
-
-        FileManager.runProgram();
-
+        new StartFrame().setVisible(true);
+        //run("input.txt");
         
     }
 
-    
-    
+    public static void run(String path) {
+        FileManager fileManager = new FileManager(path);
+        fileManager.runProgram();
+    }
+     
 }

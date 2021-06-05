@@ -1,24 +1,111 @@
+package lexicalanalyzer;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package lexicalanalyzer;
 
+
+import java.awt.Color;
+import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Document;
+import javax.swing.text.Highlighter;
+import javax.swing.text.JTextComponent;
 
 public class StartFrame extends javax.swing.JFrame {
-
-    /**
-     * Creates new form StartFrame
-     */
+    Set <String> s =new TreeSet<String>();
+    LexerClass lex = new LexerClass();
+    ArrayList<Token> List = new ArrayList<>();
     public StartFrame() {
         initComponents();
+        s.add("Divisio");
+        s.add("InferedFrom");
+        s.add("Else");
+        s.add("Ire");
+        s.add("Sire");
+        s.add("Clo");
+        s.add("SetOfClo");
+        s.add("SFBU");
+        s.add("NoneValue");
+        s.add("TerminateThisNow");
+        s.add("RingWhen");
+        s.add("BackedValue");
+        s.add("STT");
+        s.add("Check");
+        s.add("CaseOf");
+        s.add("Beginning");
+        s.add("End");
+        s.add("Using");
+        s.add("&&");
+        s.add("||");
+        s.add("==");
+        s.add("!=");
+        s.add(">=");
+        s.add("<=");
+        s.add("/#");
+        s.add("#/");
     }
+    
+    
+    
+    
+    
+    
+    
+    public class marker extends DefaultHighlighter.DefaultHighlightPainter {
+    
+        public marker(Color c) {
+            super(c);
+        }
+  
+    }
+      Highlighter.HighlightPainter marker = new marker(Color.RED);
+    
+        public static void  remove_marker(JTextComponent textcomp){
+              Highlighter hi = textcomp.getHighlighter();
+              Highlighter.Highlight[] his= hi.getHighlights();
+              
+              for(int i=0 ;i<his.length;i++){
+                  
+                  if(his[i].getPainter()instanceof marker){
+                      
+                      hi.removeHighlight(his[i]);
+                  }
+              }
+            
+        }
+        
+        public void mark( JTextComponent textcomp ,String pattern){
+            
+            try{
+            
+                Highlighter hi = textcomp.getHighlighter();
+                Document doc =textcomp.getDocument();
+                String text = doc.getText(0, doc.getLength());
+                
+                int pos=0;
+            while ((pos=text.toUpperCase().indexOf(pattern.toUpperCase(),pos))>=0){
+                hi.addHighlight(pos,pos+pattern.length(), marker);
+                pos+=pattern.length();
+                
+            }
+            }catch(Exception e){ 
+            }
+            
+        }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -30,21 +117,33 @@ public class StartFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        jTextArea = new javax.swing.JTextArea();
         jPanel1 = new javax.swing.JPanel();
         jButtonBrowse = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        jButtonCompile = new javax.swing.JButton();
+        jButtonError = new javax.swing.JButton();
         jButtonExit = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane2.setViewportView(jTextArea1);
+        jTextArea.setColumns(20);
+        jTextArea.setFont(new java.awt.Font("Arial", 0, 24)); // NOI18N
+        jTextArea.setRows(5);
+        jTextArea.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTextAreaKeyReleased(evt);
+            }
+        });
+        jScrollPane2.setViewportView(jTextArea);
 
-        jButtonBrowse.setText("Browse");
+        jPanel1.setLayout(new java.awt.GridLayout(1, 0));
+
+        jButtonBrowse.setFont(new java.awt.Font("Arial", 1, 36)); // NOI18N
+        jButtonBrowse.setForeground(new java.awt.Color(0, 153, 153));
+        jButtonBrowse.setText("BROWSE");
+        jButtonBrowse.setPreferredSize(new java.awt.Dimension(72, 42));
         jButtonBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonBrowseActionPerformed(evt);
@@ -52,10 +151,29 @@ public class StartFrame extends javax.swing.JFrame {
         });
         jPanel1.add(jButtonBrowse);
 
-        jButton2.setText("Compile");
-        jPanel1.add(jButton2);
+        jButtonCompile.setFont(new java.awt.Font("Arial", 1, 36)); // NOI18N
+        jButtonCompile.setForeground(new java.awt.Color(0, 153, 153));
+        jButtonCompile.setText("COMPILE");
+        jButtonCompile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonCompileActionPerformed(evt);
+            }
+        });
+        jPanel1.add(jButtonCompile);
 
-        jButtonExit.setText("Exit");
+        jButtonError.setFont(new java.awt.Font("Arial", 1, 36)); // NOI18N
+        jButtonError.setForeground(new java.awt.Color(0, 153, 153));
+        jButtonError.setText("Remove Marker");
+        jButtonError.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonErrorActionPerformed(evt);
+            }
+        });
+        jPanel1.add(jButtonError);
+
+        jButtonExit.setFont(new java.awt.Font("Arial", 1, 36)); // NOI18N
+        jButtonExit.setForeground(new java.awt.Color(0, 153, 153));
+        jButtonExit.setText("EXIT");
         jButtonExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonExitActionPerformed(evt);
@@ -63,8 +181,8 @@ public class StartFrame extends javax.swing.JFrame {
         });
         jPanel1.add(jButtonExit);
 
-        jLabel2.setFont(new java.awt.Font("Arial", 1, 24)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(0, 153, 153));
+        jLabel2.setFont(new java.awt.Font("Arial", 1, 36)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(0, 155, 155));
         jLabel2.setText("Enter your code or choose file:");
         jPanel2.add(jLabel2);
 
@@ -73,17 +191,18 @@ public class StartFrame extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 605, Short.MAX_VALUE)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jScrollPane2)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(14, Short.MAX_VALUE)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 388, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -91,18 +210,89 @@ public class StartFrame extends javax.swing.JFrame {
 
     private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed
         // TODO add your handling code here:
-        JFileChooser chooser = new JFileChooser();
-        chooser.showOpenDialog(null);
-            File file = chooser.getSelectedFile();
-            System.out.println(file);
-            FileManager.Location = file.toString();
-            FileManager.runProgram();
+            try{
+                JFileChooser chooser = new JFileChooser();
+                chooser.showOpenDialog(null);
+                File file = chooser.getSelectedFile();
+                if (file.length() != 0){
+                   
+                    FileManager fileManager = new FileManager(file.toString());
+                    fileManager.runProgram();
+                    
+                }else{
+                    JOptionPane.showMessageDialog(this, "Please choose valid file!");
+                }
+                
+            }catch (Exception ex){
+                System.out.print("");
+            }
+            dispose();
     }//GEN-LAST:event_jButtonBrowseActionPerformed
 
     private void jButtonExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonExitActionPerformed
-        // TODO add your handling code here:
         System.exit(0);
     }//GEN-LAST:event_jButtonExitActionPerformed
+
+    private void jButtonCompileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCompileActionPerformed
+        // TODO add your handling code here:
+        String holder = jTextArea.getText();
+        if (holder.equals("")){
+            JOptionPane.showMessageDialog(this, "Please enter your code!");
+        }else{
+            FileWriter file = null;    
+            try {
+                file = new FileWriter("externalInput.txt");
+                file.write(holder);  
+                file.close();
+            } catch (IOException ex) {
+                Logger.getLogger(StartFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            FileManager fileManager = new FileManager("externalInput.txt");
+            fileManager.runProgram();
+            for(int i =0; i<LexerClass.errors.size() ; i++)
+            {
+            mark( jTextArea , LexerClass.errors.get(i)); 
+            }
+            
+        }
+    }//GEN-LAST:event_jButtonCompileActionPerformed
+
+    private void jTextAreaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextAreaKeyReleased
+        if(evt.getKeyCode()==KeyEvent.VK_BACK_SPACE||evt.getKeyCode()==KeyEvent.VK_DELETE||evt.getKeyCode()==KeyEvent.VK_SHIFT||evt.getKeyCode()==KeyEvent.VK_CAPS_LOCK)
+        {
+           
+        }
+        else
+        {   
+            String to_check = jTextArea.getText();
+            int to_check_len = to_check.length();
+            for(String data:s)
+            {
+                String check_from_data="";
+                for(int i=0;i<to_check_len;i++)
+                {
+                    if(to_check_len<=data.length())
+                    {
+                        check_from_data = check_from_data+data.charAt(i);
+                    }
+                }
+                if(check_from_data.equals(to_check))
+                {
+                    jTextArea.setText(data);
+                    jTextArea.setSelectionStart(to_check_len);
+                    jTextArea.setSelectionEnd(data.length());
+                    break;
+                }
+            }
+        }
+    }//GEN-LAST:event_jTextAreaKeyReleased
+
+    private void jButtonErrorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonErrorActionPerformed
+        // TODO add your handling code here:
+        remove_marker(jTextArea);
+        LexerClass.errors = new ArrayList<>();
+        LexerClass.totalNoErrors = 0;
+    }//GEN-LAST:event_jButtonErrorActionPerformed
 
     /**
      * @param args the command line arguments
@@ -130,23 +320,25 @@ public class StartFrame extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(StartFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new StartFrame().setVisible(true);
+                //new StartFrame().setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton2;
     private javax.swing.JButton jButtonBrowse;
+    private javax.swing.JButton jButtonCompile;
+    private javax.swing.JButton jButtonError;
     private javax.swing.JButton jButtonExit;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextArea jTextArea;
     // End of variables declaration//GEN-END:variables
 }

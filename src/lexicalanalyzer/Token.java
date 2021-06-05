@@ -12,7 +12,7 @@ package lexicalanalyzer;
 public class Token {
     int lineNo;
     int WordNo;
-    String Match;
+    String Match = "Matched";
     String token;
     String lexeme;
 
@@ -27,14 +27,20 @@ public class Token {
         this.lexeme = lexeme;
     }
 
-    public Token(int LineNo , String lexeme , String token , int WordNo , String Match) {
+    public Token(int LineNo , String token , String lexeme , int WordNo ) {
+        this.lineNo = LineNo;
+        this.lexeme = lexeme;
+        this.token = token;
+        this.WordNo = WordNo;
+    }
+    
+    public Token(int LineNo , String token , String lexeme , int WordNo , String Match ) {
         this.lineNo = LineNo;
         this.lexeme = lexeme;
         this.token = token;
         this.WordNo = WordNo;
         this.Match = Match;
-   
-    }    
+    } 
 
     public int getLineNo() {
         return lineNo;
@@ -59,17 +65,21 @@ public class Token {
     public Token() {
     }
 
+    
+    
     @Override
     public String toString() {
-        return  "lineNo: " + lineNo + "\t" + "lexeme: " + lexeme + "\t" +"token: " + token ;
+        return  " | " + centerString(2,String.valueOf(lineNo)) 
+                + "| \t |" +  centerString(17, lexeme) 
+                + "| \t |" +  centerString(25, token) 
+                + "| \t   |"   +  centerString(3,String.valueOf(WordNo)) 
+                + "| \t |"   +  centerString(12, Match)
+                +"| ";
+
     }
+    
+    public String centerString (int width, String s) {
+    return String.format("%-" + width  + "s", String.format("%" + (s.length() + (width - s.length()) / 2) + "s", s));
+    }
+    
 }
-//    String formateOutPut( int line , String l,String t){
-//        String outPut=l;
-//        for(int i=l.length() ; i<16 ; i++){
-//            outPut+=' ';
-//        }
-//        return outPut+token;
-//    }
-//
-//}

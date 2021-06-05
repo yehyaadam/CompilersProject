@@ -20,10 +20,12 @@ import java.util.List;
  */
 public class LexerClass {
 
-    int line = 1 , totalNoErrors = 0 , wordNo = 1;
+    int line = 1, wordNo = 0;
+    public static int totalNoErrors = 0;
     BufferedReader reader;
     char current;
     String word = "";
+    public static ArrayList<String> errors = new ArrayList<>();
     ArrayList<Token> tokenList = new ArrayList<>();
     public static final String KEY_WORDS[][] = new String[][]{
         {"Divisio", "Class"},
@@ -76,7 +78,8 @@ public class LexerClass {
                 {"#/", "Comment"},
                 {"/-", "Single line Comment"},
                 {"@", "Token Delimiter"},
-                {";", "Line Delimiter"},};
+                {";", "Line Delimiter"},
+                {",", "Comma"},};
 
     public LexerClass() {
     }
@@ -94,12 +97,11 @@ public class LexerClass {
     ArrayList<Token> generateTokens() {
         Token token = readNextToken();
         while (token != null) {
-            wordNo++;
             tokenList.add(token);
             token = readNextToken();
         }
         return tokenList;
-        
+
     }
 
     Token readNextToken() {
@@ -129,77 +131,56 @@ public class LexerClass {
                     if (current == ' ' || current == '\n' || current == '\t' || current == '\r') {
                         if (current == '\n') {
                             {
-                            line++;
-                            wordNo = 0;
+                                line++;
+                                wordNo = 0;
                             }
                         }
                         current = readNextChar();
-                    } // S1
+                    } // S1 identifier 
                     else if (isLetter(current) || current == '_') {
                         state = 1;
                         break;
-                    } // S2
-                    else if (current == '<' || current == '>') {
+                    } // S2 relational operators
+                    else if (current == '<' || current == '>' || current == '=') {
                         state = 2;
                         break;
-                    } //S
-                    else if (current == '=') {
+                    } //S4 Assignment operator || relational operators
+                    else if (current == '!') {
                         state = 4;
                         break;
-                    } //S11
-                    else if ((current == '{' || current == '}') || (current == '[' || current == ']') || current == '(' || current == ')') {
+                    }
+                    //S6 Arithmetic Operation
+                    else if (current == '+' || current == '-' ||
+                            current == '*' || current == '~' || 
+                            current == '"' || current == '\'' ||
+                            current == '@' || current == ',' ||
+                            current == '{' || current == '}' ||
+                            current == '[' || current == ']' ||
+                            current == '(' || current == ')' ||
+                            current == ';'){
+                        state = 6;
+                        break;
+                    } //S7 Logic operators
+                    else if (current == '&') {
+                        state = 7;
+                        break;
+                    } //S9 Logic operators
+                    else if (current == '|') {
+                        state = 9;
+                        break;
+                    }//S10 Arithmetic Operation || Comment
+                    else if (current == '/') {
+                        state = 10;
+                        break;
+                    }// S11 Constant
+                    else if (isNumber(current)) {
                         state = 11;
                         break;
-                    } //S14 
-                    else if (current == ';') {
-                        state = 14;
-                    } //S5 
-                    else if (current == '!') {
-                        state = 5;
+                    }// S12 Comment
+                    else if (current == '#') {
+                        state = 12;
                         break;
                     }
-                    else if (current == '+' || current == '-' || current == '*')
-                    {
-                    state = 6;
-                    break;
-                    } //S7
-                    else if (current == '&')
-                    {
-                    state = 7;
-                    break;
-                    } //S9
-                    else if(current == '|')
-                    {
-                    state = 9;
-                    break;
-                    }//S8
-                    else if (current == '~')
-                    {
-                    state = 6;
-                    break;
-                    } // s13
-                    else if (current =='@')
-                    {
-                    state = 6;
-                    break;
-                    } //S12
-                    else if (current == '"' || current == '\'')
-                    {
-                    state = 6;
-                    break;
-                    }
-                    //S20
-                    else if(current == '/')
-                    {
-                    state = 20;
-                    break;
-                    }// S21
-                    else if (isNumber(current))
-                    {
-                    state = 21;
-                    break;
-                    }
-                    
                 }
                 break;
                 //State 1
@@ -213,13 +194,31 @@ public class LexerClass {
                             current = readNextChar();
                         } else {
                             if (ifFoundKeyWord(word).equals("")) {
-                                return new Token(line, "Identifier", word);
+                                return new Token(line, "Identifier", word, ++wordNo);
                             } else {
-                                return new Token(line, ifFoundKeyWord(word), word);
+                                if (word.equals("Using")) {
+                                    String anotherFilePath = "";
+
+                                    while (true) {
+                                        //System.out.println(current);
+                                        if (current == '\n') {
+                                            state = 0;
+                                            break;
+                                        } else if (isLetter(current) || current == '.') {
+                                            anotherFilePath = anotherFilePath + current;
+                                        }
+                                        current = readNextChar();
+                                    }
+
+                                    LexicalAnalyzer.run(anotherFilePath);
+                                }
+                                return new Token(line, ifFoundKeyWord(word), word, ++wordNo);
                             }
                         }
                     }
+
                 }
+
                 //State 2
                 case 2: {
                     word = word + current;
@@ -229,13 +228,12 @@ public class LexerClass {
                         state = 3;
                         break;
                     }
-                    return new Token(line, ifFoundOperators(word), word);
+                    return new Token(line, ifFoundOperators(word), word, ++wordNo);
                 }
                 // State 3
                 case 3: {
-                    //System.out.println(word);
                     current = readNextChar();
-                    return new Token(line, ifFoundOperators(word), word);
+                    return new Token(line, ifFoundOperators(word), word, ++wordNo);
                 }
                 //State 4
                 case 4: {
@@ -243,87 +241,47 @@ public class LexerClass {
                     current = readNextChar();
                     if (current == '=') {
                         word = word + current;
-                        state = 3;
-                        break;
-                    } else {
-                        return new Token(line, ifFoundOperators(word), word);
-                    }
-                }
-                //State 5
-                case 5: {
-                    word = word + current;
-                    current = readNextChar();
-                    if (current == '=') {
-                        word = word + current;
                         current = readNextChar();
-                        return new Token(line, ifFoundOperators(word), word);
+                        return new Token(line, ifFoundOperators(word), word, ++wordNo);
                     } else {
                         state = 99;
                     }
                 }
                 break;
-                
+
                 case 6: {
-                word = word + current;
-                current = readNextChar();
-                return new Token(line , ifFoundOperators(word) , word);
+                    word = word + current;
+                    current = readNextChar();
+                    return new Token(line, ifFoundOperators(word), word, ++wordNo);
                 }
                 //State 7
                 case 7: {
-                word = word + current;
-                current = readNextChar();
-                if(current == '&')
-                {   word = word +current;
-                    state = 8;
-                    break;
+                    word = word + current;
+                    current = readNextChar();
+                    if (current == '&') {
+                        word = word + current;
+                        return new Token(line, ifFoundOperators(word), word, ++wordNo);
+                    } else {
+                        state = 99;
+                    }
                 }
-                else
-                {
-                state = 99;
-                }
-                } 
                 break;
-                
-                //State 8
-                case 8: {
-                current = readNextChar();
-                return new Token (line , ifFoundOperators(word) , word );
-                }
-                
                 //State 9
                 case 9: {
-                word = word + current;
-                current = readNextChar();
-                if(current == '|')
-                {
-                word = word + current;
-                state = 8 ;
+                    word = word + current;
+                    current = readNextChar();
+                    if (current == '|') {
+                        word = word + current;
+                        return new Token(line, ifFoundOperators(word), word, ++wordNo);
+                    } else {
+                        state = 99;
+                    }
+                }
                 break;
-                }
-                else
-                {
-                state = 99;
-                }
-                }
-                break;                
-                //State 11
-                case 11: {
+                //State 10
+                case 10: {
                     word = word + current;
-                    current = readNextChar();
-                    return new Token(line, ifFoundOperators(word), word);
-                }
 
-                //State 14
-                case 14: {
-                    word = word + current;
-                    current = readNextChar();
-                    return new Token(line, ifFoundOperators(word), word);
-                }
-                
-                //State 20
-                case 20:
-                {
-                    word = word + current;
                     current = readNextChar();
                     if (current == '-') {
                         word = word + current;
@@ -334,19 +292,18 @@ public class LexerClass {
                                 break;
                             }
                         }
-                        return new Token(line, ifFoundOperators(word), word);
-                    }
-//                     else if(current == '#'){
-//                        word = word + current;
-//                        return new Token(line, ifFoundOperators(word), word);
-//                    }
-                    else {
-                        return new Token(line, ifFoundOperators(word), word);
+                        return new Token(line, ifFoundOperators(word), word, ++wordNo);
+                    } else if (current == '#') {
+                        word = word + current;
+                        state = 0;
+                        return new Token(line, ifFoundOperators(word), word, ++wordNo);
+
+                    } else {
+                        return new Token(line, ifFoundOperators(word), word, ++wordNo);
                     }
                 }
                 //S21 Constant Numbers
-                case 21:
-                {
+                case 11: {
                     word = word + current;
                     current = readNextChar();
                     if (isNumber(current)) {
@@ -357,40 +314,52 @@ public class LexerClass {
                                 word += current;
                                 current = readNextChar();
                             } else {
-                                return new Token(line, "Constant", word);
+                                return new Token(line, "Constant", word, ++wordNo);
                             }
                         }
-                    }
-                    else if (isLetter(current))
-                    {
-                    state = 99;
-                    break;
-                    }
-                    else
-                    {
-                    return new Token (line , "constant" , word);
+                    } else if (isLetter(current)) {
+                        state = 99;
+                        break;
+                    } else {
+                        return new Token(line, "Constant", word, ++wordNo);
                     }
                 }
-                    
+
+                //Multiple line comment
+                case 12: {
+                    word = word + current;
+                    current = readNextChar();
+                    while (true) {
+                        if (current != '/') {
+                            current = readNextChar();
+                            continue;
+                        } else if (current == '/') {
+                            word = word + current;
+                            current = readNextChar();
+                            return new Token(line, ifFoundOperators(word), word, ++wordNo);
+                        }
+                    }
+                }
+
                 // Error State
                 case 99: {
                     totalNoErrors++;
-                    word = word + current; 
+                    word = word + current;
                     current = readNextChar();
-                   while (true) {
+                    while (true) {
                         if (isLetter(current) || current == '_' || isNumber(current)) {
                             word = word + current;
                             current = readNextChar();
+                        } else {
+                            errors.add(word);
+                            System.out.println(errors.get(0));
+                            
+                            return new Token(line, "Invalid", word, ++wordNo, "Not Matched");
                         }
-                        else
-                        {
-                        return new Token(line , "Invalid" , word);
-                        }
-                     }
+                    }
                 }
 
                 default: {
-                    //System.out.println("Not match");
                     current = readNextChar();
                     state = 0;
                 }

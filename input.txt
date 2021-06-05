@@ -1,5 +1,4 @@
-/-This is main function
-Ire@decrease(){
-Ire@3num = 5 ;
+Using another.txt
+num = 5 ;
 RingWhen(counter<num){
-reg3 = reg3 - 1;} }
+reg3 = reg3 - 1;} 
